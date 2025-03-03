@@ -1,0 +1,157 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#define MAX_SIZE 50
+
+// Muhammad
+// 2501994866
+
+
+struct Stack
+{
+    char nilai[MAX_SIZE];
+    int top;
+};
+
+
+void NewStack(Stack *stack)
+{
+    stack->top = -1;
+}
+
+int isEmpty(Stack *stack)
+{
+    return stack->top == -1;
+}
+
+int isFull(Stack *stack)
+{
+    return stack->top == MAX_SIZE - 1;
+}
+
+void push(Stack *stack, char nilai)
+{
+    if (isFull(stack))
+    {
+        printf("Stack Is Full\n");
+        return;
+    }
+    
+    stack->nilai[++(stack->top)] = nilai;
+}
+
+char pop(Stack *stack)
+{
+    if (isEmpty(stack))
+    {
+        printf("No Stack elements\n");
+        return '\0';
+    }
+    return stack->nilai[(stack->top)--];
+}
+
+// Mengambil top
+char peek(Stack *stack)
+{
+    if (isEmpty(stack))
+    {
+        return '\0';
+    }
+    return stack->nilai[stack->top];
+}
+
+int isOperator(char character)
+{
+    return character == '+' || character == '-' || character == '*' || character == '/' || character == '^';
+}
+
+// Get precedence of an operator
+int precedence(char character)
+{
+    switch (character)
+    {
+    case '^':
+        return 3;
+    case '*':
+    case '/':
+        return 2;
+    case '+':
+    case '-':
+        return 1;
+    default:
+        return 0;
+    }
+}
+
+void infixToPostfix(char *infix, char *postfix)
+{
+    struct Stack stack;
+    NewStack(&stack);
+    int i = 0, j = 0;
+
+    // Loop untuk cek setiap karakter hingga end of string.
+    while (infix[i] != '\0')
+    {
+        char character = infix[i];
+
+        // Cek Operand
+        if (isalnum(character))
+        {
+            // add ke postfix
+            postfix[j++] = character;
+        }
+        // Jika karakter adalah open bracket'(', push ke stack
+        else if (character == '(')
+        {
+            push(&stack, character);
+        }
+        // Jika karakter adalah close bracket')', pop sampai open bracket '('
+        else if (character == ')')
+        {
+            while (!isEmpty(&stack) && peek(&stack) != '(')
+            {
+                // add ke postfix
+                postfix[j++] = pop(&stack);
+            }
+            if (!isEmpty(&stack) && peek(&stack) == '(')
+            {
+                pop(&stack); // Pop '(' dari stack
+            }
+        }
+        // Cek Operator
+        else if (isOperator(character))
+        {
+            while (!isEmpty(&stack) && precedence(peek(&stack)) >= precedence(character))
+            {
+                postfix[j++] = pop(&stack);
+            }
+            push(&stack, character);
+        }
+
+        i++;
+    }
+
+    // Pop semua ke postfix string
+    while (!isEmpty(&stack))
+    {
+        postfix[j++] = pop(&stack);
+    }
+
+    postfix[j] = '\0';
+}
+
+int main()
+{
+    char infix[MAX_SIZE], postfix[MAX_SIZE];
+
+    printf("Infix : ");
+    scanf("%s", infix);
+
+    infixToPostfix(infix, postfix);
+
+    printf("Postfix: %s\n", postfix);
+
+    return 0;
+}
